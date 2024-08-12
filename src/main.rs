@@ -16,20 +16,24 @@ fn conf() -> Conf {
     }
 }
 
-
-
 pub fn draw_segment(x: f32, y: f32, a: f32, b: f32, k: f32, color: Color) {
     let gl = unsafe { get_internal_gl().quad_gl };
+
+
+    let push_vec2 = |list: &mut Vec<Vertex>, v: Vec2|
+    {
+        list.push(Vertex::new(v.x, v.y, 0.,0.,0., color));
+    };
 
     let mut vertices_seg1 = Vec::<Vertex>::with_capacity(6);
     let mut indices = Vec::<u16>::with_capacity(12);
     
-    vertices_seg1.push(Vertex::new(0., b, 0., 0., 0., color));
-    vertices_seg1.push(Vertex::new(a * 0.5, a * SQRT_3 * 0.5 + b, 0., 0., 0., color));
-    vertices_seg1.push(Vertex::new(a * 0.5, k - b * SQRT_2 / (SQRT_3 - 1.) -  a * 0.5 / (2. - SQRT_3), 0., 0., 0., color));
-    vertices_seg1.push(Vertex::new(0., k - b * SQRT_2 / (SQRT_3 - 1.), 0., 0., 0., color));
-    vertices_seg1.push(Vertex::new(-a * 0.5, k - b * SQRT_2 / (SQRT_3 - 1.) - a * 0.5 / (2. - SQRT_3), 0., 0., 0., color));
-    vertices_seg1.push(Vertex::new(-a * 0.5, a * SQRT_3 * 0.5 + b, 0., 0., 0., color));
+    push_vec2(&mut vertices_seg1, Vec2::new(0., b));
+    push_vec2(&mut vertices_seg1, Vec2::new(a * 0.5, a * SQRT_3 * 0.5 + b));
+    push_vec2(&mut vertices_seg1, Vec2::new(a * 0.5, k - b * SQRT_2 / (SQRT_3 - 1.) -  a * 0.5 / (2. - SQRT_3)));
+    push_vec2(&mut vertices_seg1, Vec2::new(0., k - b * SQRT_2 / (SQRT_3 - 1.)));
+    push_vec2(&mut vertices_seg1, Vec2::new(-a * 0.5, k - b * SQRT_2 / (SQRT_3 - 1.) - a * 0.5 / (2. - SQRT_3)));
+    push_vec2(&mut vertices_seg1, Vec2::new(-a * 0.5, a * SQRT_3 * 0.5 + b));
     indices.extend_from_slice(&[0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5]);
 
     let mut vertices_seg2 = Vec::<Vertex>::with_capacity(6);
@@ -64,7 +68,7 @@ pub fn draw_segment(x: f32, y: f32, a: f32, b: f32, k: f32, color: Color) {
 async fn main() {
     loop {
         clear_background(GRAY);    
-        draw_segment(350.0, 350.0, 30., 15., 250., BEIGE);          
+        draw_segment(350.0, 350.0, 30., 2., 250., BEIGE);          
         
  
         next_frame().await
