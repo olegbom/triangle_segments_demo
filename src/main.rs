@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use rand::rand;
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_3, FRAC_PI_6, PI, SQRT_2};
 
 const SQRT_3: f32 = 1.73205080757;
@@ -105,11 +106,15 @@ impl SegmentCell {
 
     pub fn use_segments(&mut self, bits: u32)
     {
-        self.indices.clear(); 
+        self.indices.clear();
+        let mut counter = 0; 
         for j in (0..self.vertices.len() as u16).step_by(6) {
-            for i in j+1..j+5 {
-                self.indices.extend_from_slice(&[j, i, i + 1]);
+            if ( bits & (1 << counter) ) != 0 {
+                for i in j+1..j+5 {
+                    self.indices.extend_from_slice(&[j, i, i + 1]);
+                }
             }
+            counter += 1;
         } 
     }
 
@@ -128,14 +133,16 @@ impl SegmentCell {
 
 #[macroquad::main(conf)]
 async fn main() {
-    let cell = SegmentCell::new(30.0, 3.0, 250., BEIGE);
-
+    let mut cell = SegmentCell::new(30.0, 3.0, 250., BEIGE);
+    let mut old_time = 0.;
     loop {
         clear_background(GRAY);    
         cell.draw(350.0, 350.0);
-        // draw_segment(350.0, 350.0, 30., 10. + (get_time() as f32 * 5.0).sin() * 5.0, 250., BEIGE);          
-        
- 
+        if old_time + 0.5 < get_time() {
+            old_time = get_time();
+            cell.use_segments(rand());
+        }
+
         next_frame().await
     }
 }
