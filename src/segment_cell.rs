@@ -135,7 +135,7 @@ impl SegmentCell {
     pub fn use_segments(&mut self, bits: u32) {
         self.indices.clear();
 
-        let hex_points = self.vertices.len() as u16 - 3;
+        let hex_points = self.vertices.len() as u16 - 3 * 6;
         let mut counter = 0;
         for j in (0..hex_points).step_by(6) {
             if (bits & (1 << counter)) != 0 {
