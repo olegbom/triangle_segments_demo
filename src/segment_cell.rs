@@ -8,10 +8,14 @@ pub struct SegmentCell {
 }
 
 impl SegmentCell {
+    const HEX_NUMBER_OF_VERTICES: usize = 6 * 3 * 2 * 3;
+    const HEX_NUMBER_OF_INDICES: usize = 3 * 4 * 3 * 2 * 3;
+    const TRIANGLE_NUMBER_OF_POINTS: usize = 3 * 6 * 2;
+
     pub fn new(a: f32, b: f32, k: f32, color: Color) -> SegmentCell {
         let mut cell = SegmentCell {
-            vertices: Vec::<Vertex>::with_capacity(6 * 3 * 2 + 6 * 3 * 2 + 3 * 6),
-            indices: Vec::<u16>::with_capacity(3 * 4 * 3 * 2 + 4 * 3 * 3 * 2 + 3 * 6),
+            vertices: Vec::<Vertex>::with_capacity(Self::HEX_NUMBER_OF_VERTICES + Self::TRIANGLE_NUMBER_OF_POINTS),
+            indices: Vec::<u16>::with_capacity(Self::HEX_NUMBER_OF_INDICES + Self::TRIANGLE_NUMBER_OF_POINTS),
         };
         cell.generate_vertices(a, b, k, color);
         cell.use_segments(std::u32::MAX);
@@ -57,7 +61,7 @@ impl SegmentCell {
         for i in 0..3 {
             for j in [0., 1.] {
                 let sign = -j * 2.0 + 1.;
-                let dv = j * Vec2::from_angle(FRAC_PI_6) * k;
+                let dv: Vec2 = j * Vec2::from_angle(FRAC_PI_6) * k;
                 let rot = Vec2::from_angle(i as f32 * 2.0 * PI / 3.);
                 self.vertices.extend(
                     center_arrow
@@ -116,28 +120,33 @@ impl SegmentCell {
         }
         for i in 0..3 {
             let rot = Vec2::from_angle(i as f32 * 2.0 * PI / 3.0);
-            self.vertices.extend(
-                filling_triangle
-                    .into_iter()
-                    .map(|v| v.rotate(rot))
-                    .map(vec2_to_vertex),
-            );
-            self.vertices.extend(
-                filling_triangle
-                    .into_iter()
-                    .map(|v| v.with_x(-v.x))
-                    .map(|v| v.rotate(rot))
-                    .map(vec2_to_vertex),
-            );
+            for j in [0., 1.] {
+                let sign = -j * 2.0 + 1.;
+                let dv: Vec2 = j * Vec2::from_angle(FRAC_PI_6) * k;
+                self.vertices.extend(
+                    filling_triangle
+                        .into_iter()
+                        .map(|v| v.rotate(rot))
+                        .map(|v| v * sign + dv)
+                        .map(vec2_to_vertex),
+                );
+                self.vertices.extend(
+                    filling_triangle
+                        .into_iter()
+                        .map(|v| v.with_x(-v.x))
+                        .map(|v| v.rotate(rot))
+                        .map(|v| v * sign + dv)
+                        .map(vec2_to_vertex),
+                );
+            }
         }
     }
 
     pub fn use_segments(&mut self, bits: u32) {
         self.indices.clear();
 
-        let hex_points = self.vertices.len() as u16 - 3 * 6;
         let mut counter = 0;
-        for j in (0..hex_points).step_by(6) {
+        for j in (0..Self::HEX_NUMBER_OF_VERTICES as u16).step_by(6) {
             if (bits & (1 << counter)) != 0 {
                 for i in j + 1..j + 5 {
                     self.indices.extend_from_slice(&[j, i, i + 1]);
@@ -145,9 +154,9 @@ impl SegmentCell {
             }
             counter += 1;
         }
-        for i in 0..6 {
+        for i in (0..Self::TRIANGLE_NUMBER_OF_POINTS as u16).step_by(3) {
             if (bits & (1 << counter)) != 0 {
-                let l = hex_points + i * 3;
+                let l = Self::HEX_NUMBER_OF_VERTICES as u16 + i;
                 self.indices.extend_from_slice(&[l, l + 1, l + 2]);
             }
             counter += 1;

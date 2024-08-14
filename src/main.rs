@@ -20,8 +20,8 @@ fn conf() -> Conf {
 
 #[macroquad::main(conf)]
 async fn main() {
-    let k: f32 = 750.;
-    let mut cell = SegmentCell::new(k * 2. / 25.0, 15.0, k, BEIGE);
+    let k: f32 = 50.;
+    let mut cell = SegmentCell::new(k * 2. / 25.0, 1.0, k, BEIGE);
     let mut old_time = 0.;
     let mut masks = Vec::<u32>::with_capacity((12 + 5) * (12 + 1));
 
@@ -33,13 +33,13 @@ async fn main() {
                 if masks.len() <= counter {
                     masks.push(rand() & rand());
                 }
-                // cell.use_segments(masks[counter]);
+                cell.use_segments(masks[counter]);
                 counter += 1;
-                // cell.draw(150.0 + k * (i as f32 + j as f32 * 0.5) * SQRT_3 , 150.0 + 1.5 * k * j as f32);
+                cell.draw(150.0 + k * (i as f32 + j as f32 * 0.5) * SQRT_3 , 150.0 + 1.5 * k * j as f32);
             }
         }
 
-        cell.draw(450.0, 450.0);
+        // cell.draw(250.0, 250.0);
         if old_time + 0.3 < get_time() {
             old_time = get_time();
             for i in 0..masks.len() {
