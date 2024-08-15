@@ -28,15 +28,15 @@ async fn main() {
     loop {
         clear_background(color_u8!(39, 40, 35, 255));
         let mut counter = 0;
-        for i in -0..8 {
-            for j in -0..12 {
+        for i in -1..2 {
+            for j in -0..2 {
                 if masks.len() <= counter {
                     masks.push(rand() & rand());
                 }
                 // cell.use_segments(masks[counter]);
                 counter += 1;
                 cell.draw(
-                    k * SQRT_3 * 0.5 + k * (i as f32 + j as f32 * 0.5) * SQRT_3,
+                    k * SQRT_3 * 0.5 + k * (i as f32 + (j % 2) as f32 * 0.5) * SQRT_3,
                     k * 0.5 + 1.5 * k * j as f32,
                 );
             }
@@ -50,6 +50,17 @@ async fn main() {
             }
         }
 
+        for touch in touches() {
+            let (fill_color, size) = match touch.phase {
+                TouchPhase::Started => (GREEN, 80.0),
+                TouchPhase::Stationary => (WHITE, 60.0),
+                TouchPhase::Moved => (YELLOW, 60.0),
+                TouchPhase::Ended => (BLUE, 80.0),
+                TouchPhase::Cancelled => (BLACK, 80.0),
+            };
+            draw_circle(touch.position.x, touch.position.y, size, fill_color);
+        }
+        draw_text(format!("FPS: {}", get_fps()).as_str(), 0., 32., 64., RED);
         next_frame().await
     }
 }
