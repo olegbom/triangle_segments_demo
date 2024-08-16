@@ -2,6 +2,7 @@ use macroquad::prelude::*;
 use rand::rand;
 
 mod segment_cell;
+mod raw_miniquad;
 
 use segment_cell::{SegmentCell, SQRT_3};
 
@@ -20,16 +21,25 @@ fn conf() -> Conf {
 
 #[macroquad::main(conf)]
 async fn main() {
+    let stage = {
+        let InternalGlContext {
+            quad_context: ctx, ..
+        } = unsafe { get_internal_gl() };
+
+        raw_miniquad::Stage::new(ctx)
+    };
+
+    
     let k: f32 = 150.;
-    let mut cell = SegmentCell::new(k * 2. / 15.0, k / 75.0, k, BEIGE);
+    let mut cell = SegmentCell::new(k * 2. / 15.0, (k / 75.0).max(0.5), k, BEIGE);
     let mut old_time = 0.;
     let mut masks = Vec::<u32>::with_capacity((12 + 5) * (12 + 1));
 
     loop {
         clear_background(color_u8!(39, 40, 35, 255));
         let mut counter = 0;
-        for i in -1..2 {
-            for j in -0..2 {
+        for i in -1..4 {
+            for j in -0..4 {
                 if masks.len() <= counter {
                     masks.push(rand() & rand());
                 }
@@ -61,6 +71,36 @@ async fn main() {
             draw_circle(touch.position.x, touch.position.y, size, fill_color);
         }
         draw_text(format!("FPS: {}", get_fps()).as_str(), 0., 32., 64., RED);
+
+        {
+            let mut gl = unsafe { get_internal_gl() };
+
+            // Ensure that macroquad's shapes are not going to be lost
+            gl.flush();
+
+            let t = get_time();
+
+            gl.quad_context.apply_pipeline(&stage.pipeline);
+
+            gl.quad_context
+                .begin_default_pass(miniquad::PassAction::Nothing);
+            gl.quad_context.apply_bindings(&stage.bindings);
+
+            for i in 0..10 {
+                let t = t + i as f64 * 0.3;
+
+                gl.quad_context
+                    .apply_uniforms(miniquad::UniformsSource::table(
+                        &raw_miniquad::shader::Uniforms {
+                            offset: (t.sin() as f32 * 0.5, (t * 3.).cos() as f32 * 0.5),
+                        },
+                    ));
+                gl.quad_context.draw(0, 6, 1);
+            }
+            gl.quad_context.end_render_pass();
+        }
+
+
         next_frame().await
     }
 }
