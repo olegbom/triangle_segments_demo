@@ -93,6 +93,7 @@ async fn main() {
                     .apply_uniforms(miniquad::UniformsSource::table(
                         &raw_miniquad::shader::Uniforms {
                             offset: (t.sin() as f32 * 0.5, (t * 3.).cos() as f32 * 0.5),
+                            aspect: screen_width() / screen_height(),
                         },
                     ));
                 gl.quad_context.draw(0, 6, 1);

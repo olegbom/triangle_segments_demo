@@ -1,12 +1,11 @@
 #version 100
 attribute vec2 pos;
-attribute vec2 uv;
 
 uniform vec2 offset;
-
-varying lowp vec2 texcoord;
+uniform float aspect;
 
 void main() {
-    gl_Position = vec4(pos + offset, 0, 1);
-    texcoord = uv;
+    vec2 p = pos + offset;
+    p.y *= aspect;
+    gl_Position = vec4(p, 0, 1);
 }

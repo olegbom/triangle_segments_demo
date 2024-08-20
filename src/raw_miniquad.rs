@@ -9,7 +9,6 @@ struct Vec2 {
 #[repr(C)]
 struct Vertex {
     pos: Vec2,
-    uv: Vec2,
 }
 
 pub struct Stage {
@@ -20,12 +19,12 @@ pub struct Stage {
 impl Stage {
     pub fn new(ctx: &mut dyn RenderingBackend) -> Stage {
         #[rustfmt::skip]
-            let vertices: [Vertex; 4] = [
-                Vertex { pos : Vec2 { x: -0.5, y: -0.5 }, uv: Vec2 { x: 0., y: 0. } },
-                Vertex { pos : Vec2 { x:  0.5, y: -0.5 }, uv: Vec2 { x: 1., y: 0. } },
-                Vertex { pos : Vec2 { x:  0.5, y:  0.5 }, uv: Vec2 { x: 1., y: 1. } },
-                Vertex { pos : Vec2 { x: -0.5, y:  0.5 }, uv: Vec2 { x: 0., y: 1. } },
-            ];
+        let vertices: [Vertex; 4] = [
+            Vertex { pos : Vec2 { x: -0.5, y: -0.5 } },
+            Vertex { pos : Vec2 { x:  0.5, y: -0.5 } },
+            Vertex { pos : Vec2 { x:  0.5, y:  0.5 } },
+            Vertex { pos : Vec2 { x: -0.5, y:  0.5 } },
+        ];
         let vertex_buffer = ctx.new_buffer(
             BufferType::VertexBuffer,
             BufferUsage::Immutable,
@@ -39,19 +38,10 @@ impl Stage {
             BufferSource::slice(&indices[..]),
         );
 
-        let pixels: [u8; 4 * 4 * 4] = [
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,
-            0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-            0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-        ];
-        let texture = ctx.new_texture_from_rgba8(4, 4, &pixels);
-
         let bindings = Bindings {
             vertex_buffers: vec![vertex_buffer],
             index_buffer,
-            images: vec![texture],
+            images: vec![],
         };
 
         let shader = ctx
@@ -68,7 +58,6 @@ impl Stage {
             &[BufferLayout::default()],
             &[
                 VertexAttribute::new("pos", VertexFormat::Float2),
-                VertexAttribute::new("uv", VertexFormat::Float2),
             ],
             shader,
             Default::default(),
@@ -86,9 +75,12 @@ pub mod shader {
 
     pub fn meta() -> ShaderMeta {
         ShaderMeta {
-            images: vec!["tex".to_string()],
+            images: vec![],
             uniforms: UniformBlockLayout {
-                uniforms: vec![UniformDesc::new("offset", UniformType::Float2)],
+                uniforms: vec![
+                    UniformDesc::new("offset", UniformType::Float2),
+                    UniformDesc::new("aspect", UniformType::Float1)
+                    ],
             },
         }
     }
@@ -96,5 +88,6 @@ pub mod shader {
     #[repr(C)]
     pub struct Uniforms {
         pub offset: (f32, f32),
+        pub aspect: f32,
     }
 }
