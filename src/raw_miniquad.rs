@@ -1,14 +1,13 @@
 use macroquad::miniquad;
 use macroquad::miniquad::*;
+use glam::{vec2, Vec2};
+
+use crate::segment_cell::SegmentCell;
 
 #[repr(C)]
-struct Vec2 {
-    x: f32,
-    y: f32,
-}
-#[repr(C)]
-struct Vertex {
-    pos: Vec2,
+pub struct VertexQ {
+    pub pos: Vec2,
+    pub index: f32,
 }
 
 pub struct Stage {
@@ -18,24 +17,20 @@ pub struct Stage {
 
 impl Stage {
     pub fn new(ctx: &mut dyn RenderingBackend) -> Stage {
-        #[rustfmt::skip]
-        let vertices: [Vertex; 4] = [
-            Vertex { pos : Vec2 { x: -0.5, y: -0.5 } },
-            Vertex { pos : Vec2 { x:  0.5, y: -0.5 } },
-            Vertex { pos : Vec2 { x:  0.5, y:  0.5 } },
-            Vertex { pos : Vec2 { x: -0.5, y:  0.5 } },
-        ];
+
+        let k = 0.3;
+        let sg: SegmentCell = SegmentCell::new(k * 2. / 15.0, k / 75.0, k); 
+        
         let vertex_buffer = ctx.new_buffer(
             BufferType::VertexBuffer,
             BufferUsage::Immutable,
-            BufferSource::slice(&vertices),
+            BufferSource::slice(&sg.vertices),
         );
 
-        let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
         let index_buffer = ctx.new_buffer(
             BufferType::IndexBuffer,
             BufferUsage::Immutable,
-            BufferSource::slice(&indices[..]),
+            BufferSource::slice(&sg.indices[..]),
         );
 
         let bindings = Bindings {
@@ -56,7 +51,10 @@ impl Stage {
 
         let pipeline = ctx.new_pipeline(
             &[BufferLayout::default()],
-            &[VertexAttribute::new("pos", VertexFormat::Float2)],
+            &[
+                VertexAttribute::new("pos", VertexFormat::Float2),
+                VertexAttribute::new("index", VertexFormat::Float1)
+            ],
             shader,
             Default::default(),
         );
@@ -78,7 +76,7 @@ pub mod shader {
                 uniforms: vec![
                     UniformDesc::new("offset", UniformType::Float2),
                     UniformDesc::new("aspect", UniformType::Float1),
-                    UniformDesc::new("bitfield", UniformType::Int1),
+                    UniformDesc::new("bitfield", UniformType::Int4),
                 ],
             },
         }
@@ -88,6 +86,6 @@ pub mod shader {
     pub struct Uniforms {
         pub offset: (f32, f32),
         pub aspect: f32,
-        pub bitfield: i32,
+        pub bitfield: (i32, i32, i32, i32),
     }
 }

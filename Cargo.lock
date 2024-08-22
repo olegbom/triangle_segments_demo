@@ -277,6 +277,7 @@ dependencies = [
 name = "triangle_segments_demo"
 version = "0.1.0"
 dependencies = [
+ "glam",
  "macroquad",
 ]
 

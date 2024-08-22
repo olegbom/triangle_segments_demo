@@ -30,10 +30,10 @@ async fn main() {
     };
 
     let k: f32 = 150.;
-    let mut cell = SegmentCell::new(k * 2. / 15.0, (k / 75.0).max(0.5), k, BEIGE);
     let mut old_time = 0.;
     let mut masks = Vec::<u32>::with_capacity((12 + 5) * (12 + 1));
-
+    
+    let mut r_num: u32 = 0;
     loop {
         clear_background(color_u8!(39, 40, 35, 255));
         let mut counter = 0;
@@ -44,10 +44,10 @@ async fn main() {
                 }
                 // cell.use_segments(masks[counter]);
                 counter += 1;
-                cell.draw(
-                    k * SQRT_3 * 0.5 + k * (i as f32 + (j % 2) as f32 * 0.5) * SQRT_3,
-                    k * 0.5 + 1.5 * k * j as f32,
-                );
+                // cell.draw(
+                //     k * SQRT_3 * 0.5 + k * (i as f32 + (j % 2) as f32 * 0.5) * SQRT_3,
+                //     k * 0.5 + 1.5 * k * j as f32,
+                // );
             }
         }
 
@@ -57,6 +57,13 @@ async fn main() {
             for i in 0..masks.len() {
                 masks[i] = rand() & rand();
             }
+
+            if r_num != std::u32::MAX {
+                r_num = (r_num << 1) | 1;
+            }
+            else {
+                r_num = 0;
+            }   
         }
 
         for touch in touches() {
@@ -85,19 +92,21 @@ async fn main() {
                 .begin_default_pass(miniquad::PassAction::Nothing);
             gl.quad_context.apply_bindings(&stage.bindings);
 
-            for i in 0..10 {
+            for i in 0..1 {
                 let t = t + i as f64 * 0.3;
-
+                
                 gl.quad_context
                     .apply_uniforms(miniquad::UniformsSource::table(
                         &raw_miniquad::shader::Uniforms {
-                            offset: (t.sin() as f32 * 0.5, (t * 3.).cos() as f32 * 0.5),
+                            offset: (t.sin() as f32 * 0.0, (t * 3.).cos() as f32 * 0.0),
                             aspect: screen_width() / screen_height(),
-                            bitfield: i,
+                            bitfield: ((r_num & 0xFF) as i32 , ((r_num >> 8) & 0xFF) as i32, ((r_num >> 16) & 0xFF) as i32, ((r_num >> 24) & 0xFF) as i32)
                         },
                     ));
-                gl.quad_context.draw(0, 6, 1);
+                gl.quad_context.draw(0, ((SegmentCell::HEX_NUMBER_OF_INDICES + SegmentCell::TRIANGLE_NUMBER_OF_POINTS)) as i32, 1);
             }
+
+            
             gl.quad_context.end_render_pass();
         }
 

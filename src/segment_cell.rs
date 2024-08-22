@@ -1,30 +1,33 @@
 use macroquad::prelude::*;
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_3, FRAC_PI_6, PI, SQRT_2};
 
+use crate::raw_miniquad::{VertexQ};
+
+
 pub const SQRT_3: f32 = 1.73205080757;
 pub struct SegmentCell {
-    vertices: Vec<Vertex>,
-    indices: Vec<u16>,
+    pub vertices: Vec<VertexQ>,
+    pub indices: Vec<u16>,
 }
 
 impl SegmentCell {
     const HEX_NUMBER_OF_VERTICES: usize = 6 * 3 * 2 * 3;
-    const HEX_NUMBER_OF_INDICES: usize = 3 * 4 * 3 * 2 * 3;
-    const TRIANGLE_NUMBER_OF_POINTS: usize = 3 * 6 * 2;
+    pub const HEX_NUMBER_OF_INDICES: usize = 3 * 4 * 3 * 2 * 3;
+    pub const TRIANGLE_NUMBER_OF_POINTS: usize = 3 * 6 * 2;
 
-    pub fn new(a: f32, b: f32, k: f32, color: Color) -> SegmentCell {
+    pub fn new(a: f32, b: f32, k: f32) -> SegmentCell {
         let mut cell = SegmentCell {
-            vertices: Vec::<Vertex>::with_capacity(Self::HEX_NUMBER_OF_VERTICES + Self::TRIANGLE_NUMBER_OF_POINTS),
+            vertices: Vec::<VertexQ>::with_capacity(Self::HEX_NUMBER_OF_VERTICES + Self::TRIANGLE_NUMBER_OF_POINTS),
             indices: Vec::<u16>::with_capacity(Self::HEX_NUMBER_OF_INDICES + Self::TRIANGLE_NUMBER_OF_POINTS),
         };
-        cell.generate_vertices(a, b, k, color);
+        cell.generate_vertices(a, b, k);
         cell.use_segments(std::u32::MAX);
         cell
     }
 
-    pub fn generate_vertices(&mut self, a: f32, b: f32, k: f32, color: Color) {
-        let vec2_to_vertex = |v: Vec2| Vertex::new(v.x, v.y, 0., 0., 0., color);
-
+    pub fn generate_vertices(&mut self, a: f32, b: f32, k: f32) {
+        let vec2_to_vertex = |v: Vec2| VertexQ { pos: v, index: 0. };
+        
         let center_arrow = [
             vec2(a * 0.5, a * SQRT_3 * 0.5 + b),
             vec2(0., b),
@@ -140,6 +143,11 @@ impl SegmentCell {
                 );
             }
         }
+        let mut index = 0;
+        for value in self.vertices.iter_mut() {
+            value.index = index as f32;
+            index += 1;
+        }
     }
 
     pub fn use_segments(&mut self, bits: u32) {
@@ -164,13 +172,13 @@ impl SegmentCell {
     }
 
     pub fn draw(&self, x: f32, y: f32) {
-        let gl = unsafe { get_internal_gl().quad_gl };
-        gl.push_model_matrix(Mat4::from_translation(Vec3::new(x, y, 0.0)));
+        // let gl = unsafe { get_internal_gl().quad_gl };
+        // gl.push_model_matrix(Mat4::from_translation(Vec3::new(x, y, 0.0)));
 
-        gl.texture(None);
-        gl.draw_mode(DrawMode::Triangles);
-        gl.geometry(&self.vertices, &self.indices);
+        // gl.texture(None);
+        // gl.draw_mode(DrawMode::Triangles);
+        // gl.geometry(&self.vertices, &self.indices);
 
-        gl.pop_model_matrix();
+        // gl.pop_model_matrix();
     }
 }
