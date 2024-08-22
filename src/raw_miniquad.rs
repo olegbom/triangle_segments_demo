@@ -56,9 +56,7 @@ impl Stage {
 
         let pipeline = ctx.new_pipeline(
             &[BufferLayout::default()],
-            &[
-                VertexAttribute::new("pos", VertexFormat::Float2),
-            ],
+            &[VertexAttribute::new("pos", VertexFormat::Float2)],
             shader,
             Default::default(),
         );
@@ -79,8 +77,9 @@ pub mod shader {
             uniforms: UniformBlockLayout {
                 uniforms: vec![
                     UniformDesc::new("offset", UniformType::Float2),
-                    UniformDesc::new("aspect", UniformType::Float1)
-                    ],
+                    UniformDesc::new("aspect", UniformType::Float1),
+                    UniformDesc::new("bitfield", UniformType::Int1),
+                ],
             },
         }
     }
@@ -89,5 +88,6 @@ pub mod shader {
     pub struct Uniforms {
         pub offset: (f32, f32),
         pub aspect: f32,
+        pub bitfield: i32,
     }
 }

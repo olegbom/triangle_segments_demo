@@ -1,8 +1,8 @@
 use macroquad::prelude::*;
 use rand::rand;
 
-mod segment_cell;
 mod raw_miniquad;
+mod segment_cell;
 
 use segment_cell::{SegmentCell, SQRT_3};
 
@@ -29,7 +29,6 @@ async fn main() {
         raw_miniquad::Stage::new(ctx)
     };
 
-    
     let k: f32 = 150.;
     let mut cell = SegmentCell::new(k * 2. / 15.0, (k / 75.0).max(0.5), k, BEIGE);
     let mut old_time = 0.;
@@ -94,13 +93,13 @@ async fn main() {
                         &raw_miniquad::shader::Uniforms {
                             offset: (t.sin() as f32 * 0.5, (t * 3.).cos() as f32 * 0.5),
                             aspect: screen_width() / screen_height(),
+                            bitfield: i,
                         },
                     ));
                 gl.quad_context.draw(0, 6, 1);
             }
             gl.quad_context.end_render_pass();
         }
-
 
         next_frame().await
     }
