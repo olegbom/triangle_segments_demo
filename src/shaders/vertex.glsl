@@ -3,7 +3,7 @@ attribute vec2 pos;
 attribute float index;
 
 uniform vec2 offset;
-uniform float aspect;
+uniform vec2 scale;
 uniform ivec4 bitfield;
 
 bool is_odd(int n)
@@ -74,7 +74,7 @@ bool get_bit(int field, int bit)
 
 void main() {
     vec2 p = pos + offset;
-    p.y *= aspect;
+    p *= scale;
 
     int i = int(index)/3;
     if( i < 36 )

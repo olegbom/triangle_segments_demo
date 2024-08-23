@@ -1,6 +1,6 @@
 use macroquad::miniquad;
 use macroquad::miniquad::*;
-use glam::{vec2, Vec2};
+use glam::Vec2;
 
 use crate::segment_cell::SegmentCell;
 
@@ -13,12 +13,13 @@ pub struct VertexQ {
 pub struct Stage {
     pub pipeline: Pipeline,
     pub bindings: Bindings,
+    pub sg: SegmentCell,
 }
 
 impl Stage {
     pub fn new(ctx: &mut dyn RenderingBackend) -> Stage {
 
-        let k = 0.3;
+        let k = 1.0;
         let sg: SegmentCell = SegmentCell::new(k * 2. / 15.0, k / 75.0, k); 
         
         let vertex_buffer = ctx.new_buffer(
@@ -59,7 +60,7 @@ impl Stage {
             Default::default(),
         );
 
-        Stage { pipeline, bindings }
+        Stage { pipeline, bindings, sg }
     }
 }
 
@@ -75,7 +76,7 @@ pub mod shader {
             uniforms: UniformBlockLayout {
                 uniforms: vec![
                     UniformDesc::new("offset", UniformType::Float2),
-                    UniformDesc::new("aspect", UniformType::Float1),
+                    UniformDesc::new("scale", UniformType::Float2),
                     UniformDesc::new("bitfield", UniformType::Int4),
                 ],
             },
@@ -85,7 +86,7 @@ pub mod shader {
     #[repr(C)]
     pub struct Uniforms {
         pub offset: (f32, f32),
-        pub aspect: f32,
+        pub scale: (f32, f32),
         pub bitfield: (i32, i32, i32, i32),
     }
 }

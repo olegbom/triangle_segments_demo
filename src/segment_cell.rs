@@ -173,4 +173,41 @@ impl SegmentCell {
             counter += 1;
         }
     }
+
+    pub fn is_point_in_triangle(a: Vec2, b: Vec2, c: Vec2, o: Vec2) -> bool {
+        let p = Self::vect(a - o, b - a);
+        let q = Self::vect(b - o, c - b);
+        let r = Self::vect(c - o, a - c);
+
+        (p <= 0. && q <= 0. && r <= 0.) || (p >= 0. && q >= 0. && r >= 0.)
+    }
+
+    fn vect(a: Vec2, b: Vec2) -> f32 {
+        a.x*b.y - a.y*b.x
+    }
+
+    pub fn get_segment_index(&self, p: Vec2) -> i32 {
+        let mut result = -1;
+        for i in (0..self.indices.len()).step_by(3) {
+            let is_in_triangle = Self::is_point_in_triangle(
+                self.vertices.get(self.indices[i] as usize).unwrap().pos,
+                self.vertices.get(self.indices[i + 1] as usize).unwrap().pos,
+                self.vertices.get(self.indices[i + 2] as usize).unwrap().pos,
+                p
+            );
+
+            if is_in_triangle {
+                let index = if i < Self::HEX_NUMBER_OF_INDICES {
+                    i/3/4
+                }
+                else {
+                    Self::HEX_NUMBER_OF_INDICES/3/4 + (i - Self::HEX_NUMBER_OF_INDICES)/3
+                };
+
+                result = index as i32;
+                break;
+            }
+        }
+        result
+    } 
 }
