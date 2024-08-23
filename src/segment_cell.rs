@@ -1,8 +1,7 @@
 use macroquad::prelude::*;
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_3, FRAC_PI_6, PI, SQRT_2};
 
-use crate::raw_miniquad::{VertexQ};
-
+use crate::raw_miniquad::VertexQ;
 
 pub const SQRT_3: f32 = 1.73205080757;
 pub struct SegmentCell {
@@ -17,8 +16,12 @@ impl SegmentCell {
 
     pub fn new(a: f32, b: f32, k: f32) -> SegmentCell {
         let mut cell = SegmentCell {
-            vertices: Vec::<VertexQ>::with_capacity(Self::HEX_NUMBER_OF_VERTICES + Self::TRIANGLE_NUMBER_OF_POINTS),
-            indices: Vec::<u16>::with_capacity(Self::HEX_NUMBER_OF_INDICES + Self::TRIANGLE_NUMBER_OF_POINTS),
+            vertices: Vec::<VertexQ>::with_capacity(
+                Self::HEX_NUMBER_OF_VERTICES + Self::TRIANGLE_NUMBER_OF_POINTS,
+            ),
+            indices: Vec::<u16>::with_capacity(
+                Self::HEX_NUMBER_OF_INDICES + Self::TRIANGLE_NUMBER_OF_POINTS,
+            ),
         };
         cell.generate_vertices(a, b, k);
         cell.use_segments(std::u32::MAX);
@@ -27,7 +30,7 @@ impl SegmentCell {
 
     pub fn generate_vertices(&mut self, a: f32, b: f32, k: f32) {
         let vec2_to_vertex = |v: Vec2| VertexQ { pos: v, index: 0. };
-        
+
         let center_arrow = [
             vec2(a * 0.5, a * SQRT_3 * 0.5 + b),
             vec2(0., b),
@@ -169,16 +172,5 @@ impl SegmentCell {
             }
             counter += 1;
         }
-    }
-
-    pub fn draw(&self, x: f32, y: f32) {
-        // let gl = unsafe { get_internal_gl().quad_gl };
-        // gl.push_model_matrix(Mat4::from_translation(Vec3::new(x, y, 0.0)));
-
-        // gl.texture(None);
-        // gl.draw_mode(DrawMode::Triangles);
-        // gl.geometry(&self.vertices, &self.indices);
-
-        // gl.pop_model_matrix();
     }
 }

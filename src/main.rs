@@ -1,5 +1,4 @@
 use macroquad::prelude::*;
-use rand::rand;
 
 mod raw_miniquad;
 mod segment_cell;
@@ -34,19 +33,6 @@ async fn main() {
     let mut r_num: u32 = 0;
     loop {
         clear_background(color_u8!(39, 40, 35, 255));
-        let mut counter = 0;
-        for i in -1..4 {
-            for j in -0..4 {
-                // cell.use_segments(masks[counter]);
-                counter += 1;
-                // cell.draw(
-                //     k * SQRT_3 * 0.5 + k * (i as f32 + (j % 2) as f32 * 0.5) * SQRT_3,
-                //     k * 0.5 + 1.5 * k * j as f32,
-                // );
-            }
-        }
-
-        // cell.draw(250.0, 250.0);
         if old_time + 0.3 < get_time() {
             old_time = get_time();
 
@@ -75,16 +61,13 @@ async fn main() {
             // Ensure that macroquad's shapes are not going to be lost
             gl.flush();
 
-            let t = get_time();
-
             gl.quad_context.apply_pipeline(&stage.pipeline);
 
             gl.quad_context
                 .begin_default_pass(miniquad::PassAction::Nothing);
             gl.quad_context.apply_bindings(&stage.bindings);
             for j in -4..4 {
-                for i in -3..2 {
-                    let t = t + i as f64 * 0.3;
+                for i in -3..3 {
                     let k = 0.3;
                     let dx = k * SQRT_3 * 0.5 + k * (i as f32 + (j % 2) as f32 * 0.5) * SQRT_3;
                     let dy = k * 0.5 + 1.5 * k * j as f32;
