@@ -117,7 +117,7 @@ async fn main() {
                         (SegmentCell::HEX_NUMBER_OF_INDICES
                             + SegmentCell::TRIANGLE_NUMBER_OF_POINTS)
                             as i32,
-                        1,
+                        64,
                     );
                 }
             }
