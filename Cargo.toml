@@ -6,3 +6,9 @@ edition = "2021"
 [dependencies]
 macroquad = "0.4"
 glam = "*"
+
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"
+lto = true
+

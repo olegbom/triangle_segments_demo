@@ -1,8 +1,8 @@
 #version 100
 attribute vec2 pos;
 attribute float index;
+attribute vec2 offset;
 
-uniform vec2 offset;
 uniform vec2 scale;
 uniform ivec4 bitfield;
 
