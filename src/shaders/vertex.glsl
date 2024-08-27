@@ -2,9 +2,9 @@
 attribute vec2 pos;
 attribute float index;
 attribute vec2 offset;
+attribute vec2 segments_bitfield;
 
 uniform vec2 scale;
-uniform ivec2 bitfield;
 
 bool is_odd(int n)
 {
@@ -145,11 +145,11 @@ void main() {
 
     if( i < 16 )
     {
-        is_draw = get_bit(bitfield.x, int(i)) ;
+        is_draw = get_bit(int(segments_bitfield.x), int(i)) ;
     }
     else 
     {
-        is_draw = get_bit(bitfield.y, int(i - 16)) ;
+        is_draw = get_bit(int(segments_bitfield.y), int(i - 16)) ;
     }
    
 

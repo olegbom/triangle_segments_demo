@@ -105,10 +105,6 @@ async fn main() {
                 .apply_uniforms(miniquad::UniformsSource::table(
                     &raw_miniquad::shader::Uniforms {
                         scale: (scale, scale * screen_width() / screen_height()),
-                        bitfield: (
-                            (r_num & 0xFFFF) as i32,
-                            ((r_num >> 16) & 0xFFFF) as i32
-                        ),
                     },
                 ));
             gl.quad_context.draw(

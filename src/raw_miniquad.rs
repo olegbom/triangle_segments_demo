@@ -32,6 +32,7 @@ impl Stage {
             BufferUsage::Immutable,
             BufferSource::slice(&sg.indices[..]),
         );
+
         let mut coords = vec![Vec2::new(SQRT_3 * 0.5, 0.5); 10000];
         let mut counter = 0;
         for j in -5..5 {
@@ -48,8 +49,15 @@ impl Stage {
             BufferSource::slice(&coords[..]),
         );
 
+        let mut segments_bits = vec![Vec2::new(u16::MAX as f32, u16::MAX as f32); 10000];
+        let segments_bits_buffer = ctx.new_buffer(
+            BufferType::VertexBuffer,
+            BufferUsage::Stream,
+            BufferSource::slice(&segments_bits[..]),
+        );
+
         let bindings = Bindings {
-            vertex_buffers: vec![vertex_buffer, instance_buffer],
+            vertex_buffers: vec![vertex_buffer, instance_buffer, segments_bits_buffer],
             index_buffer,
             images: vec![],
         };
@@ -76,6 +84,7 @@ impl Stage {
                 VertexAttribute::with_buffer("pos", VertexFormat::Float2, 0),
                 VertexAttribute::with_buffer("index", VertexFormat::Float1, 0),
                 VertexAttribute::with_buffer("offset", VertexFormat::Float2, 1),
+                VertexAttribute::with_buffer("segments_bitfield", VertexFormat::Float2, 2),
             ],
             shader,
             Default::default(),
@@ -99,10 +108,7 @@ pub mod shader {
         ShaderMeta {
             images: vec![],
             uniforms: UniformBlockLayout {
-                uniforms: vec![
-                    UniformDesc::new("scale", UniformType::Float2),
-                    UniformDesc::new("bitfield", UniformType::Int2),
-                ],
+                uniforms: vec![UniformDesc::new("scale", UniformType::Float2)],
             },
         }
     }
@@ -110,6 +116,5 @@ pub mod shader {
     #[repr(C)]
     pub struct Uniforms {
         pub scale: (f32, f32),
-        pub bitfield: (i32, i32),
     }
 }
