@@ -34,7 +34,7 @@ async fn main() {
     let mut fps_sum = 0.0;
     let mut fps_counter = 0;
     let mut fact_fps = 0.0;
-    let mut scale = 0.01;
+    let mut scale = 0.1;
     loop {
         fps_sum += get_fps() as f32;
         fps_counter += 1;
@@ -106,10 +106,8 @@ async fn main() {
                     &raw_miniquad::shader::Uniforms {
                         scale: (scale, scale * screen_width() / screen_height()),
                         bitfield: (
-                            (r_num & 0xFF) as i32,
-                            ((r_num >> 8) & 0xFF) as i32,
-                            ((r_num >> 16) & 0xFF) as i32,
-                            ((r_num >> 24) & 0xFF) as i32,
+                            (r_num & 0xFFFF) as i32,
+                            ((r_num >> 16) & 0xFFFF) as i32
                         ),
                     },
                 ));
@@ -117,7 +115,7 @@ async fn main() {
                 0,
                 (SegmentCell::HEX_NUMBER_OF_INDICES + SegmentCell::TRIANGLE_NUMBER_OF_POINTS)
                     as i32,
-                10000,
+                100,
             );
 
             gl.quad_context.end_render_pass();
