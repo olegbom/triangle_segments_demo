@@ -34,6 +34,7 @@ async fn main() {
     let mut fps_sum = 0.0;
     let mut fps_counter = 0;
     let mut fact_fps = 0.0;
+    let mut scale = 0.01;
     loop {
         fps_sum += get_fps() as f32;
         fps_counter += 1;
@@ -43,6 +44,11 @@ async fn main() {
             fact_fps = fps_sum / fps_counter as f32;
             fps_sum = 0.;
             fps_counter = 0;
+            if r_num == std::u32::MAX {
+                r_num = 0;
+            } else {
+                r_num = (r_num << 1) | 1;
+            }
         }
 
         for touch in touches() {
@@ -58,9 +64,9 @@ async fn main() {
             if touch.phase == TouchPhase::Ended {
                 let (mut mx, mut my) = (touch.position.x, touch.position.y);
                 mx = mx / screen_width() * 2.0 - 1.0;
-                mx = mx / 0.3 - SQRT_3 * 0.5;
+                mx = mx / scale - SQRT_3 * 0.5;
                 my = my / screen_height() * 2.0 - 1.0;
-                my = my / (0.3 * screen_width() / screen_height()) + 0.5;
+                my = my / (scale * screen_width() / screen_height()) + 0.5;
                 my = -my;
                 let index = stage.sg.get_segment_index(vec2(mx, my));
                 if index >= 0 {
@@ -73,9 +79,9 @@ async fn main() {
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mut mx, mut my) = mouse_position();
             mx = mx / screen_width() * 2.0 - 1.0;
-            mx = mx / 0.3 - SQRT_3 * 0.5;
+            mx = mx / scale - SQRT_3 * 0.5;
             my = my / screen_height() * 2.0 - 1.0;
-            my = my / (0.3 * screen_width() / screen_height()) + 0.5;
+            my = my / (scale * screen_width() / screen_height()) + 0.5;
             my = -my;
             let index = stage.sg.get_segment_index(vec2(mx, my));
             if index >= 0 {
@@ -95,32 +101,24 @@ async fn main() {
                 .begin_default_pass(miniquad::PassAction::Nothing);
             gl.quad_context.apply_bindings(&stage.bindings);
 
-            for j in -0..1 {
-                for i in -0..1 {
-                    let dx = SQRT_3 * 0.5 + (i as f32 + (j % 2) as f32 * 0.5) * SQRT_3;
-                    let dy = 0.5 + 1.5 * j as f32;
-
-                    gl.quad_context
-                        .apply_uniforms(miniquad::UniformsSource::table(
-                            &raw_miniquad::shader::Uniforms {
-                                scale: (0.3, 0.3 * screen_width() / screen_height()),
-                                bitfield: (
-                                    (r_num & 0xFF) as i32,
-                                    ((r_num >> 8) & 0xFF) as i32,
-                                    ((r_num >> 16) & 0xFF) as i32,
-                                    ((r_num >> 24) & 0xFF) as i32,
-                                ),
-                            },
-                        ));
-                    gl.quad_context.draw(
-                        0,
-                        (SegmentCell::HEX_NUMBER_OF_INDICES
-                            + SegmentCell::TRIANGLE_NUMBER_OF_POINTS)
-                            as i32,
-                        64,
-                    );
-                }
-            }
+            gl.quad_context
+                .apply_uniforms(miniquad::UniformsSource::table(
+                    &raw_miniquad::shader::Uniforms {
+                        scale: (scale, scale * screen_width() / screen_height()),
+                        bitfield: (
+                            (r_num & 0xFF) as i32,
+                            ((r_num >> 8) & 0xFF) as i32,
+                            ((r_num >> 16) & 0xFF) as i32,
+                            ((r_num >> 24) & 0xFF) as i32,
+                        ),
+                    },
+                ));
+            gl.quad_context.draw(
+                0,
+                (SegmentCell::HEX_NUMBER_OF_INDICES + SegmentCell::TRIANGLE_NUMBER_OF_POINTS)
+                    as i32,
+                10000,
+            );
 
             gl.quad_context.end_render_pass();
         }
