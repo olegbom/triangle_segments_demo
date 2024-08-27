@@ -18,6 +18,7 @@ fn conf() -> Conf {
     }
 }
 
+
 #[macroquad::main(conf)]
 async fn main() {
     let stage = {
@@ -34,7 +35,7 @@ async fn main() {
     let mut fps_sum = 0.0;
     let mut fps_counter = 0;
     let mut fact_fps = 0.0;
-    let mut scale = 0.1;
+    let mut scale = 0.01;
     loop {
         fps_sum += get_fps() as f32;
         fps_counter += 1;
@@ -72,6 +73,7 @@ async fn main() {
                 if index >= 0 {
                     r_num ^= 1 << index;
                 }
+                break;
             }
         }
         draw_text(format!("FPS: {}", fact_fps).as_str(), 0., 32., 64., RED);
@@ -111,7 +113,7 @@ async fn main() {
                 0,
                 (SegmentCell::HEX_NUMBER_OF_INDICES + SegmentCell::TRIANGLE_NUMBER_OF_POINTS)
                     as i32,
-                100,
+                10000,
             );
 
             gl.quad_context.end_render_pass();
