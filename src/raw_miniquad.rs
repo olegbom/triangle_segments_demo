@@ -1,7 +1,7 @@
 use glam::{vec2, Vec2};
-use macroquad::{miniquad, rand};
 use macroquad::miniquad::*;
 use macroquad::rand::rand;
+use macroquad::{miniquad, rand};
 
 use crate::segment_cell::{SegmentCell, SQRT_3};
 
@@ -36,8 +36,8 @@ impl Stage {
 
         let mut coords = vec![Vec2::new(SQRT_3 * 0.5, 0.5); 10000];
         let mut counter = 0;
-        for j in -50..50 {
-            for i in -50..50 {
+        for j in -6..6 {
+            for i in -12..12 {
                 let dx = SQRT_3 * 0.5 + (i as f32 + (i32::abs(j) % 2) as f32 * 0.5) * SQRT_3;
                 let dy = 0.5 + 1.5 * j as f32;
                 coords[counter] = vec2(dx, dy);

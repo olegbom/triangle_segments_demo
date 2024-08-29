@@ -18,7 +18,6 @@ fn conf() -> Conf {
     }
 }
 
-
 #[macroquad::main(conf)]
 async fn main() {
     let stage = {
@@ -35,7 +34,7 @@ async fn main() {
     let mut fps_sum = 0.0;
     let mut fps_counter = 0;
     let mut fact_fps = 0.0;
-    let mut scale = 0.01;
+    let mut scale = 0.08;
     loop {
         fps_sum += get_fps() as f32;
         fps_counter += 1;
@@ -97,6 +96,12 @@ async fn main() {
             // Ensure that macroquad's shapes are not going to be lost
             gl.flush();
 
+            gl.quad_context.buffer_update(
+                stage.bindings.vertex_buffers[2],
+                miniquad::BufferSource::slice(&Vec::from_iter(
+                    (0..574).map(|i| Vec2::new(i as f32 + fps_counter as f32, 3.)),
+                )),
+            );
             gl.quad_context.apply_pipeline(&stage.pipeline);
 
             gl.quad_context
@@ -113,7 +118,7 @@ async fn main() {
                 0,
                 (SegmentCell::HEX_NUMBER_OF_INDICES + SegmentCell::TRIANGLE_NUMBER_OF_POINTS)
                     as i32,
-                10000,
+                574,
             );
 
             gl.quad_context.end_render_pass();
