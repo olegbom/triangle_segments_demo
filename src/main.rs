@@ -35,6 +35,11 @@ async fn main() {
     let mut fps_counter = 0;
     let mut fact_fps = 0.0;
     let mut scale = 0.08;
+    let mut segments_bits = vec![Vec2::new(u16::MAX as f32, u16::MAX as f32); 288];
+    for i in 0..segments_bits.len() {
+        segments_bits[i] = vec2((i & 0xFFFF) as f32, ((i >> 16) & 0xFFFF) as f32);
+    }
+
     loop {
         fps_sum += get_fps() as f32;
         fps_counter += 1;
@@ -62,32 +67,15 @@ async fn main() {
             draw_circle(touch.position.x, touch.position.y, size, fill_color);
 
             if touch.phase == TouchPhase::Ended {
-                let (mut mx, mut my) = (touch.position.x, touch.position.y);
-                mx = mx / screen_width() * 2.0 - 1.0;
-                mx = mx / scale - SQRT_3 * 0.5;
-                my = my / screen_height() * 2.0 - 1.0;
-                my = my / (scale * screen_width() / screen_height()) + 0.5;
-                my = -my;
-                let index = stage.sg.get_segment_index(vec2(mx, my));
-                if index >= 0 {
-                    r_num ^= 1 << index;
-                }
+                stage.sg.modify_segments_bit(&mut segments_bits, touch.position.x, touch.position.y, scale);
                 break;
             }
         }
         draw_text(format!("FPS: {}", fact_fps).as_str(), 0., 32., 64., RED);
 
         if is_mouse_button_pressed(MouseButton::Left) {
-            let (mut mx, mut my) = mouse_position();
-            mx = mx / screen_width() * 2.0 - 1.0;
-            mx = mx / scale - SQRT_3 * 0.5;
-            my = my / screen_height() * 2.0 - 1.0;
-            my = my / (scale * screen_width() / screen_height()) + 0.5;
-            my = -my;
-            let index = stage.sg.get_segment_index(vec2(mx, my));
-            if index >= 0 {
-                r_num ^= 1 << index;
-            }
+            stage.sg.modify_segments_bit(&mut segments_bits, mouse_position().0, mouse_position().1, scale);
+            
         }
 
         {
@@ -98,9 +86,8 @@ async fn main() {
 
             gl.quad_context.buffer_update(
                 stage.bindings.vertex_buffers[2],
-                miniquad::BufferSource::slice(&Vec::from_iter(
-                    (0..574).map(|i| Vec2::new(i as f32 + fps_counter as f32, 3.)),
-                )),
+                miniquad::BufferSource::slice(&segments_bits),
+                
             );
             gl.quad_context.apply_pipeline(&stage.pipeline);
 
@@ -118,7 +105,7 @@ async fn main() {
                 0,
                 (SegmentCell::HEX_NUMBER_OF_INDICES + SegmentCell::TRIANGLE_NUMBER_OF_POINTS)
                     as i32,
-                574,
+                288,
             );
 
             gl.quad_context.end_render_pass();
