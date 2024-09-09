@@ -37,7 +37,7 @@ async fn main() {
     let mut scale = 0.08;
     let mut segments_bits = vec![Vec2::new(u16::MAX as f32, u16::MAX as f32); 288];
     for i in 0..segments_bits.len() {
-        segments_bits[i] = vec2((i & 0xFFFF) as f32, ((i >> 16) & 0xFFFF) as f32);
+        segments_bits[i] = vec2((0xFFFF) as f32, (0xFFFF) as f32);
     }
 
     loop {
@@ -67,15 +67,24 @@ async fn main() {
             draw_circle(touch.position.x, touch.position.y, size, fill_color);
 
             if touch.phase == TouchPhase::Ended {
-                stage.sg.modify_segments_bit(&mut segments_bits, touch.position.x, touch.position.y, scale);
+                stage.sg.modify_segments_bit(&mut segments_bits, touch.position.x, touch.position.y, scale, true);
                 break;
             }
         }
         draw_text(format!("FPS: {}", fact_fps).as_str(), 0., 32., 64., RED);
 
-        if is_mouse_button_pressed(MouseButton::Left) {
-            stage.sg.modify_segments_bit(&mut segments_bits, mouse_position().0, mouse_position().1, scale);
-            
+        if is_mouse_button_down(MouseButton::Left) {
+            stage.sg.modify_segments_bit(&mut segments_bits, mouse_position().0, mouse_position().1, scale, true);
+        }
+
+        if is_mouse_button_down(MouseButton::Right) {
+            stage.sg.modify_segments_bit(&mut segments_bits, mouse_position().0, mouse_position().1, scale, false);
+        }
+
+        if is_key_pressed(KeyCode::C) && is_key_down(KeyCode::LeftControl) {
+            for i in 0..segments_bits.len() {
+                segments_bits[i] = vec2((0xFFFF) as f32, (0xFFFF) as f32);
+            }
         }
 
         {

@@ -228,7 +228,7 @@ impl SegmentCell {
         ((2.0 * y - 1.0) / 3.0).floor() as i32
     }
 
-    pub fn modify_segments_bit(&self, seg_bits: &mut Vec<Vec2>, x: f32, y: f32, scale: f32) {
+    pub fn modify_segments_bit(&self, seg_bits: &mut Vec<Vec2>, x: f32, y: f32, scale: f32, isSet: bool) {
         let mut mx = x; 
         let mut my = y;
         mx = mx / screen_width() * 2.0 - 1.0;
@@ -245,11 +245,21 @@ impl SegmentCell {
         let coord_index = ((i + 12) + (j+6)*24) as usize;
         if index >= 0 && coord_index < seg_bits.len() {
             let old = seg_bits[coord_index];
-            if index < 16 {
-                seg_bits[coord_index] = old.with_x((old.x as u16 ^ (1 << index)) as f32);
+            if isSet {
+                if index < 16 {
+                    seg_bits[coord_index] = old.with_x((old.x as u16 | (1 << index)) as f32);
+                } else {
+                    seg_bits[coord_index] = old.with_y((old.y as u16 | (1 << (index - 16))) as f32);
+                }
             } else {
-                seg_bits[coord_index] = old.with_y((old.y as u16 ^ (1 << (index - 16))) as f32);
+                if index < 16 {
+                    seg_bits[coord_index] = old.with_x((old.x as u16 & !(1 << index)) as f32);
+                } else {
+                    seg_bits[coord_index] = old.with_y((old.y as u16 & !(1 << (index - 16))) as f32);
+                }
             }
         }
     }
+
+
 }
