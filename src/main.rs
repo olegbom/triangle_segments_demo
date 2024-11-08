@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use macroquad::prelude::*;
 
 mod raw_miniquad;
@@ -34,7 +36,7 @@ async fn main() {
     let mut fps_sum = 0.0;
     let mut fps_counter = 0;
     let mut fact_fps = 0.0;
-    let mut scale = 0.08;
+    let mut scale = 0.38;
     let mut segments_bits = vec![Vec2::new(u16::MAX as f32, u16::MAX as f32); 288];
     for i in 0..segments_bits.len() {
         segments_bits[i] = vec2((0xFFFF) as f32, (0xFFFF) as f32);
@@ -67,21 +69,44 @@ async fn main() {
             draw_circle(touch.position.x, touch.position.y, size, fill_color);
 
             if touch.phase == TouchPhase::Ended {
-                stage.sg.modify_segments_bit(&mut segments_bits, touch.position.x, touch.position.y, scale, true);
+                stage.sg.toggle_segments_bit(
+                    &mut segments_bits,
+                    touch.position.x,
+                    touch.position.y,
+                    scale,
+                );
                 break;
             }
         }
         draw_text(format!("FPS: {}", fact_fps).as_str(), 0., 32., 64., RED);
 
-        if is_mouse_button_down(MouseButton::Left) {
-            stage.sg.modify_segments_bit(&mut segments_bits, mouse_position().0, mouse_position().1, scale, true);
-        }
+        // if is_mouse_button_down(MouseButton::Left) {
+        //     stage.sg.modify_segments_bit(
+        //         &mut segments_bits,
+        //         mouse_position().0,
+        //         mouse_position().1,
+        //         scale,
+        //         true,
+        //     );
+        // }
 
         if is_mouse_button_down(MouseButton::Right) {
-            stage.sg.modify_segments_bit(&mut segments_bits, mouse_position().0, mouse_position().1, scale, false);
+            stage.sg.modify_segments_bit(
+                &mut segments_bits,
+                mouse_position().0,
+                mouse_position().1,
+                scale,
+                false,
+            );
         }
 
-        if is_key_pressed(KeyCode::C) && is_key_down(KeyCode::LeftControl) {
+        if (is_key_pressed(KeyCode::C) && is_key_down(KeyCode::LeftControl))
+            || touches()
+                .iter()
+                .filter(|t| t.phase == TouchPhase::Moved)
+                .count()
+                > 2
+        {
             for i in 0..segments_bits.len() {
                 segments_bits[i] = vec2((0xFFFF) as f32, (0xFFFF) as f32);
             }
@@ -96,7 +121,6 @@ async fn main() {
             gl.quad_context.buffer_update(
                 stage.bindings.vertex_buffers[2],
                 miniquad::BufferSource::slice(&segments_bits),
-                
             );
             gl.quad_context.apply_pipeline(&stage.pipeline);
 

@@ -228,8 +228,15 @@ impl SegmentCell {
         ((2.0 * y - 1.0) / 3.0).floor() as i32
     }
 
-    pub fn modify_segments_bit(&self, seg_bits: &mut Vec<Vec2>, x: f32, y: f32, scale: f32, isSet: bool) {
-        let mut mx = x; 
+    pub fn modify_segments_bit(
+        &self,
+        seg_bits: &mut Vec<Vec2>,
+        x: f32,
+        y: f32,
+        scale: f32,
+        is_set: bool,
+    ) {
+        let mut mx = x;
         let mut my = y;
         mx = mx / screen_width() * 2.0 - 1.0;
         mx = mx / scale - SQRT_3 * 0.5;
@@ -238,14 +245,14 @@ impl SegmentCell {
         my = -my;
         let i = SegmentCell::get_index_i(mx + SQRT_3, my + 1.0);
         let j = SegmentCell::get_index_j(my + 1.0);
-        mx -= SegmentCell::get_dx(i,j) - SQRT_3 * 0.5;
+        mx -= SegmentCell::get_dx(i, j) - SQRT_3 * 0.5;
         my -= SegmentCell::get_dy(j) - 0.5;
 
         let index = self.get_segment_index(vec2(mx, my));
-        let coord_index = ((i + 12) + (j+6)*24) as usize;
+        let coord_index = ((i + 12) + (j + 6) * 24) as usize;
         if index >= 0 && coord_index < seg_bits.len() {
             let old = seg_bits[coord_index];
-            if isSet {
+            if is_set {
                 if index < 16 {
                     seg_bits[coord_index] = old.with_x((old.x as u16 | (1 << index)) as f32);
                 } else {
@@ -255,11 +262,35 @@ impl SegmentCell {
                 if index < 16 {
                     seg_bits[coord_index] = old.with_x((old.x as u16 & !(1 << index)) as f32);
                 } else {
-                    seg_bits[coord_index] = old.with_y((old.y as u16 & !(1 << (index - 16))) as f32);
+                    seg_bits[coord_index] =
+                        old.with_y((old.y as u16 & !(1 << (index - 16))) as f32);
                 }
             }
         }
     }
 
+    pub fn toggle_segments_bit(&self, seg_bits: &mut Vec<Vec2>, x: f32, y: f32, scale: f32) {
+        let mut mx = x;
+        let mut my = y;
+        mx = mx / screen_width() * 2.0 - 1.0;
+        mx = mx / scale - SQRT_3 * 0.5;
+        my = my / screen_height() * 2.0 - 1.0;
+        my = my / (scale * screen_width() / screen_height()) + 0.5;
+        my = -my;
+        let i = SegmentCell::get_index_i(mx + SQRT_3, my + 1.0);
+        let j = SegmentCell::get_index_j(my + 1.0);
+        mx -= SegmentCell::get_dx(i, j) - SQRT_3 * 0.5;
+        my -= SegmentCell::get_dy(j) - 0.5;
 
+        let index = self.get_segment_index(vec2(mx, my));
+        let coord_index = ((i + 12) + (j + 6) * 24) as usize;
+        if index >= 0 && coord_index < seg_bits.len() {
+            let old = seg_bits[coord_index];
+            if index < 16 {
+                seg_bits[coord_index] = old.with_x((old.x as u16 ^ (1 << index)) as f32);
+            } else {
+                seg_bits[coord_index] = old.with_y((old.y as u16 ^ (1 << (index - 16))) as f32);
+            }
+        }
+    }
 }
